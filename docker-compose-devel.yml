@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  asterisk:
+    image: asterisk-16-ari
+    restart: unless-stopped
+    container_name: asterisk
+    ports:
+      - "5061:5061"
+      - "8443:8443"
+      - "8080:8080"
+      - "7777"
+      - "10000-65535"
+    environment:
+      - TRUNK_TYPE
+      - TRUNK_ACCOUNT
+      - TRUNK_PASSWORD
+      - ARI_USER
+      - ARI_PASSWORD
+      - ARI_APPLICATION
+
+  bridge:
+    image: asterisk-dialogflow-ari-bridge:1.0
+    restart: unless-stopped
+    container_name: bridge
+    ports:
+      - "7777"
+    depends_on:
+      - "asterisk"
+      - "audioserver"
+    volumes:
+      - ./bridge-config:/config
+
+  audioserver:
+    image: asterisk-dialogflow-rtp-audioserver:1.0
+    restart: unless-stopped
+    container_name: audioserver
+    ports:
+      - "7777"
+    depends_on:
+      - "asterisk"
+    volumes:
+      - ./audioserver-config:/config
